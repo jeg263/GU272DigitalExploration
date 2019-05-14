@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <title>GU272 Digital Exploration</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123347692-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-123347692-1');
+    </script>
+
+    <!--Fonts-->
+    <link href="https://fonts.googleapis.com/css?family=IM+Fell+Double+Pica|IM+Fell+English+SC|Oswald" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+
+    <!--Dependency Stylesheets-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="./dependencies/jquery.fullpage.css">
+    <link rel="stylesheet" href="./css/enjoyhint.css">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
+
+    <!-- Visualization Style Sheets-->
+    <!-- <link type="text/css" rel="stylesheet" href="./css/timeline.css"/> -->
+    <link type="text/css" rel="stylesheet" href="./css/demographics.css"/>
+    <link type="text/css" rel="stylesheet" href="./css/slaveTree.css"/>
+
+    <!--Pathways Style Sheets-->
+    <link type="text/css" rel="stylesheet" href="./css/pathwaysVisualization.css"/>
+
+    <!--Integration Style Sheets-->
+    <link type="text/css" rel="stylesheet" href="./css/style.css"/>
+
+    <!--New Tree Stuff-->
+    <script src="dependencies/lodash.js"></script>
+
+    <style>
+        /*body {*/
+        /*font: 10px sans-serif;*/
+        /*}*/
+
+        #graphMapWhat, #graphMapWhatTree {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+        }
+        .nodeText, .emphasis {
+            font: 16px sans-serif;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .family-tree svg {
+            float: left;
+        }
+
+        .linage {
+            fill: none;
+            stroke: #000;
+        }
+
+        .marriage {
+            fill: none;
+            stroke: black;
+            font-style: normal;
+        }
+
+        .man {
+            background-color: lightblue;
+            border-style: solid;
+            border-width: 1px;
+            font-style: normal;
+        }
+        .selected-man {
+            background-color: pink;
+            border-style: solid;
+            border-width: 1px;
+        }
+
+        .woman {
+            background-color: bisque;
+            border-style: solid;
+            border-width: 1px;
+            font-style: normal;
+        }
+
+        .emphasis {
+            /*font-style: italic;*/
+        }
+
+        p {
+            padding: 0;
+            margin: 0;
+        }
+
+    </style>
+
+    <script src="dependencies/tree.js"></script>
+
+
+</head>
+<body>
+<!--Dependency scripts-->
+<script type="text/javascript" src="dependencies/jquery.min.js"></script>
+<script type="text/javascript" src="dependencies/d3.v2.min.js"></script> <!--Note that this version of d3.js is modified to be compatable with d3.v4.js - to do this every instance of d3 in the file has been changed to d3v2-->
+<script type="text/javascript" src="dependencies/d3.v4.min.js"></script>
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="dependencies/type-ahead.min.js"></script>
+<script type="text/javascript" src="dependencies/fisheye.js"></script>
+<script type="text/javascript" src="./dependencies/jquery.fullpage.js"></script>
+
+<!--Main Controller scripts-->
+<script type="text/javascript" src="./js/packages.js"></script>
+<script type="text/javascript" src="./js/helperFunctions.js"></script>
+<script type="text/javascript" src="./js/pageController.js"></script>
+
+<!--Pathways scripts-->
+<script type="text/javascript" src="./dataUrl.js"></script>
+<script type="text/javascript" src="./js/familyData.js"></script>
+<script type="text/javascript" src="./js/familyData2.js"></script>
+<script type="text/javascript" src="./js/chordDiagram.js"></script>
+<script type="text/javascript" src="./js/pathwayControls.js"></script>
+<script type="text/javascript" src="./js/familyTreeControls.js"></script>
+
+<div id="fullpage">
+    <div id="header" class="header-bar">
+        <a href="#home" style="color: white; display: inline-block; float: left; margin-left: 20px; height: 100%">
+            <div class="heading-container">
+                <div class="gu272">GU272</div>
+                <div class="category">| <span id="heading-bar-subtitle">Demographics</span></div>
+            </div>
+            <!--<div class="header-bar-title" style="display: inline-block; float: left; margin-left: 7px; margin-top: 9px; font-size: 22px;">Title | Subtitle (change into the fonts you are already using, also subtitle changes with page)</div>-->
+            <!--<div class="header-bar-title" style="display: inline-block; float: left; margin-top: 3px;">GU</div>-->
+            <!--<div class="header-bar-title" style="display: inline-block; float: left; margin-top: -3px;">272</div>-->
+            <!--&lt;!&ndash;<div class="header-bar-title" style="display: inline-block; float: left; margin-top: 9px; margin-left: 5px; font-size: 18px;">DIGITAL EXPLORER</div>&ndash;&gt;-->
+            <!--<div class="header-bar-title" style="display: inline-block; float: left; margin-left: 7px; margin-top: 9px; font-size: 22px;">DIGITAL EXPLORER</div>-->
+        </a>
+        <div class="nav-bar-links-container">
+            <div class="link-item">
+                <a class="gu272History" href="#gu272History">History</a>
+            </div>
+            <div class="link-item">
+                <a class="gu272Passage" href="#gu272Passage">Map</a>
+            </div>
+            <div class="link-item">
+                <a class="pathways" href="#pathways">Pathways</a>
+            </div>
+            <div class="link-item">
+                <a class="gu272Demographics" href="#gu272Demographics">Demographics</a>
+            </div>
+            <div class="link-item">
+                <a class="pathways" href="#familyTreePage">Family Trees</a>
+            </div>
+            <div class="link-item">
+                <a class="gu272FamilyTrees" href="#routes">Routes</a>
+            </div>
+            <!--<div class="link-item">-->
+                <!--<a class="gu272FamilyTrees" href="#gu272FamilyTrees">Family Trees</a>-->
+            <!--</div>-->
+            <div class="link-item">
+                <a class="about" href="#about">About</a>
+            </div>
+        </div>
+    </div>
+    <div id="titlePage" class="section">
+        <div id="cover" class="page">
+            <div class="nav-bar">
+                <div class="nav-bar-links-container">
+                    <div class="link-item">
+                        <a class="gu272History" href="#gu272History">History</a>
+                    </div>
+                    <div class="link-item">
+                        <a class="gu272Passage" href="#gu272Passage">Map</a>
+                    </div>
+                    <div class="link-item">
+                        <a class="pathways" href="#pathways">Pathways</a>
+                    </div>
+                    <div class="link-item">
+                        <a class="gu272Demographics" href="#gu272Demographics">Demographics</a>
+                    </div>
+                    <div class="link-item">
+                        <a class="pathways" href="#familyTreePage">Family Trees</a>
+                    </div>
+                    <div class="link-item">
+                        <a class="gu272FamilyTrees" href="#routes">Routes</a>
+                    </div>
+                    <!--<div class="link-item">-->
+                        <!--<a class="gu272FamilyTrees" href="#gu272FamilyTrees">Family Trees</a>-->
+                    <!--</div>-->
+                    <div class="link-item">
+                        <a class="about" href="#about">About</a>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="content">
+                            <h2 class="top">meet the</h2>
+                            <h1>GU272</h1>
+                            <h2 class="top">a digital exploration of</h2>
+                            <h2> georgetown's history of slavery</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="historyPage" class="section">
+        <div style="width: 100%; height: 54px;">
+        </div>
+        <div style="width: 100%; position: relative">
+            <div class="container h-100">
+              <div class="row justify-content-center align-self-center">
+                <div class="col-lg-6 col-xs-12 py-3">
+                    <div class="container d-flex h-100">
+                        <div class="justify-content-center align-self-center">
+                            <h3>THE SALE</h3>
+                            <hr>
+                            <div class="timeline-text">
+                               In June 1838, the head of the Maryland Jesuits Rev. Thomas Mulledy S.J. sold 272 enslaved men, women, and children. The buyers were Henry Johnson, a member of the House of Representatives from Louisiana, and Jesse Batey, another Louisiana planter. The sale was worth about $3.3 million in today's dollars. Part of the proceeds went to pay the debts of Georgetown College.
+                               <br><br>
+                               This project uses data visualization to illustrate information such as the names, ages, journeys, and ultimately the stories of the GU272.
+                               <br><br>
+                               Historical and genealogical research about the GU272 is a work in progress.  The data reported below is provided primarily for the purpose of demonstrating the power and usefulness of some data visualization tools and techniques. This data may contain unintentional errors, inaccuracies, and omissions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-xs-12 py-3">
+                    <div class="container d-flex h-100">
+                        <div class="justify-content-center align-self-center">
+                            <figure>
+                                <a href="http://slaveryarchive.georgetown.edu/items/show/1" id="bill-of-sale">
+                                    <img src="images/bill-of-sale.jpg" class="img-fluid" alt="Bill of Sale">
+                                </a>
+                            </figure>
+                            <figcaption class="figure-caption">Article of agreement between Mulledy, Batey, and Johnson. June 1838, Maryland Province Archives, Booth Family Center for Special Collections, Georgetown University.</figcaption>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div id="passagePage" class="section">
+        <div style="width: 100%; height: 54px; background: white;">
+        </div>
+        <div style="width: 100%; position: relative">
+            <div class="container h-100">
+              <div class="row justify-content-center align-self-center">
+                <div class="col-lg-5 col-xs-12 py-3">
+                    <div class="container d-flex h-100">
+                        <div class="justify-content-center align-self-center">
+                            <h3>THE SECOND MIDDLE PASSAGE</h3>
+                            <hr>
+                            <div class="timeline-text">
+                                The GU272 were shipped from Maryland to Louisiana to work on two sugar plantations. They were part of a “second middle passage” that sent a million enslaved Americans to the Deep South.
+                                <div class="button">
+                                    <button id="playButton" type="button" class="btn btn-sm btn-primary my-4 button">Play Route</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="routeMapColumn" class="col-lg-7 col-xs-12">
+                    <div id="routeMapContainer" class="h-100 w-100 px-3">
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div id="pathwaysPage" class="section">
+        <div style="width: 100%; height: 54px; background: white;">
+        </div>
+        <div style="background: #f4f5f8; width: 100%; height: calc(100VH - 54px); position: relative">
+            <div id="left-container" class="stage-shrink" style="float: left; width: 60%; height: 100%; border-top: 1px #eceef1 solid; overflow: scroll;">
+                <!--Roots Wheel container-->
+                <div id="bundle" style="position: relative; min-width: 100%; display: inline-block"></div>
+                <!--Map data-->
+                <div id="mapContainer" class="opacity0" style="width: 100%; height: 100%; text-align: center; position:relative; overflow: hidden">
+                    <div id="noMapData" class="no-map-data-container">
+                        <label class="no-map-data-label">Choose an enslaved person to view on the map where the Jesuits sold the person</label>
+                    </div>
+                    <label id="mapOtherLabel" class="map-other-label hidden-other-label">
+                        No buyer data
+                    </label>
+                    <label id="mapOtherSourceLabel" class="map-other-label hidden-other-label">
+                        No original plantation data
+                    </label>
+                    <div id="mapBox" style="height: 553px; width: 600px; overflow: visible; display: inline-block; position: absolute;margin: auto;top: 0;right: 0;bottom: 0;left: 0;">
+                        <div id="pathwaysHistory" class="page" style="width: 100%; height: 1630px;">
+                            <div id="pathwaysMap" class="fixed" style="width: 100%; height: 100%; float: left;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!--Family container-->
+                <div id="familyTreeContainer" class="opacity0" style="width: 100%; height: 100%; text-align: center; position:relative; overflow: hidden">
+                    <div id="noTreeData" class="no-map-data-container">
+                        <label class="no-map-data-label">Choose an enslaved person to view the family tree for the person.</label>
+                    </div>
+                    <div class="family-tree" id="graphMapWhat"></div>
+                </div>
+            </div>
+            <div id="right-positioning-container" class="arrow-positioning-container stage-open">
+                <!--Button to move panel-->
+                <div id="move-button" class="arrow-container">
+                    <i id="rightButton" class="fas fa-angle-right right-button"></i>
+                    <i id="leftButton" style="display: none" class="fas fa-angle-left right-button"></i>
+                </div>
+            </div>
+            <div id="right-container" class="right-container stage-open">
+                <!--Selector-->
+                <div id="selector-box" style="display: block; margin-bottom: 10px">
+                    <div class="btn-group btn-group-toggle visual" data-toggle="buttons">
+                        <label class="btn btn-sm btn-secondary active visual" style="width: 33%">
+                            <input type="radio" name="options" id="chordSelector" autocomplete="off" checked> Roots Wheel
+                        </label>
+                        <label id="mapSelectorButton" class="btn btn-sm btn-secondary visual" style="width: 34%">
+                            <input type="radio" name="options" id="mapSelector" autocomplete="off"> Map
+                        </label>
+                        <!--Family Trees box - possible addition to visualization-->
+                        <label class="btn btn-sm btn-secondary visual" style="width: 33%">
+                            <input type="radio" name="options" id="familySelector" autocomplete="off"> Family Trees
+                        </label>
+                    </div>
+                </div>
+
+                <label class="label-header larger-header">Filter Enslaved Persons</label>
+                <!-- SM: Added form row and column class to condense control grid -->
+                <div class="form-row">
+                    <div class="col">
+                        <!--Family-->
+                        <label class="label-header">Family:</label>
+                        <div class="filter-input-container">
+                            <input id="inputFamily" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">
+                        </div>
+                        <!--<div class="sub-label" style="margin-top: -5px; display: block; margin-bottom: 5px">(Search for enslaved person and will filter to show people in that slave's family)</div>-->
+                    </div>
+
+                    <!--Age-->
+                    <div class="col">
+                        <label class="label-header">Age:</label>
+                        <div class="filter-input-container">
+                            <div class="dropdown input-dropdown" style="flex-grow: 1">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle input-filter" style="width: 132px" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Greater than
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" id="dropdownOptionEquals" href="#dropdownOptionEqualsPressed">Equals</a>
+                                    <a class="dropdown-item" id="dropdownOptionGreaterThan" href="#dropdownOptionGreaterThanPressed">Greater than</a>
+                                    <a class="dropdown-item" id="dropdownOptionLessThan" href="#dropdownOptionLessThanPressed">Less than</a>
+                                </div>
+                            </div>
+                            <input id="inputAge" type="number" style="flex-grow: 1; border-top-left-radius: 0; border-bottom-left-radius: 0" type="text" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!--Plantation-->
+                    <div class="col-sm-5">                    
+                        <label class="label-header">Starting plantation:</label>
+                        <div class="filter-input-container">
+                            <div class="dropdown" style="flex-grow: 1">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle input-filter" style="width: 100%" type="button" id="dropdownPlantationButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Any
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownPlantationButton">
+                                    <a class="dropdown-item" id="dropdownOptionAnyPlantation" href="#dropdownOptionAnyPlantationPressed">Any</a>
+                                    <a class="dropdown-item" id="dropdownOptionWhiteMarsh" href="#dropdownOptionWhiteMarshPressed">White Marsh</a>
+                                    <a class="dropdown-item" id="dropdownOptionThomasMonor" href="#dropdownOptionThomasMonorPressed">St. Thomas's Manor</a>
+                                    <a class="dropdown-item" id="dropdownOptionSInigoes" href="#dropdownOptionSInigoesPressed">St. Inigoes</a>
+                                    <a class="dropdown-item" id="dropdownOptionNewtown" href="#dropdownOptionNewtownPressed">Newtown</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Buyer-->
+                    <div class="col-sm-4">
+                       <label class="label-header" data-intro='Hello step two!'>Ending plantation:</label>
+                       <div class="filter-input-container">
+                           <div class="dropdown" style="flex-grow: 1">
+                               <button class="btn btn-sm btn-secondary dropdown-toggle input-filter" style="width: 100%" type="button" id="dropdownBuyerButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   Any
+                               </button>
+                               <div class="dropdown-menu" aria-labelledby="dropdownBuyerButton">
+                                   <a class="dropdown-item" id="dropdownOptionAnyBuyer" href="#dropdownOptionAnyBuyerPressed">Any</a>
+                                   <a class="dropdown-item" id="dropdownOptionJBatey" href="#dropdownOptionJBateyPressed">West Oak</a>
+                                   <a class="dropdown-item" id="dropdownOptionHJohnson" href="#dropdownOptionHJohnsonPressed">Chatham</a>
+                                   <a class="dropdown-item" id="dropdownOptionOtherMaryland" href="#dropdownOptionHJohnsonPressed">Other Maryland</a>
+                                   <a class="dropdown-item" id="dropdownOptionOtherLouisiana" href="#dropdownOptionHJohnsonPressed">Other Louisiana</a>
+                                   <a class="dropdown-item" id="dropdownOptionOtherBuyer" href="#dropdownOptionOtherBuyerPressed">Other</a>
+                               </div>
+                           </div>
+                       </div>
+                     </div>
+                     <!--Gender-->
+                     <div class="col-sm-3">
+                       <label class="label-header">Sex:</label>
+                       <div class="filter-input-container">
+                           <div class="dropdown" style="flex-grow: 1">
+                               <button class="btn btn-sm btn-secondary dropdown-toggle input-filter" style="width: 100%" type="button" id="dropdownGenderButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   Any
+                               </button>
+                               <div class="dropdown-menu" aria-labelledby="dropdownGenderButton">
+                                   <a class="dropdown-item" id="dropdownOptionAnyGender" href="#dropdownOptionAnyGenderPressed">Any</a>
+                                   <a class="dropdown-item" id="dropdownOptionMale" href="#dropdownOptionMalePressed">Male</a>
+                                   <a class="dropdown-item" id="dropdownOptionFemale" href="#dropdownOptionFemalePressed">Female</a>
+                               </div>
+                           </div>
+                       </div>
+                     </div>
+                </div>
+
+                <!--Katharine Jackson Checkbox - possible addition to visualization-->
+                <!--<div class="form-check" style="margin-bottom: 5px">-->
+                <!--<input type="checkbox" class="form-check-input" id="katharineJacksonCheck">-->
+                <!--<label class="form-check-label" id="checkbox3">Enslaved persons on the Katharine Jackson</label>-->
+                <!--</div>-->
+
+                <!--Filter and Select Buttons-->
+                <div class="filter-input-container">
+                    <div style="flex-grow: 1"></div>
+                    <!--<input id="inputFamily" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+                    <button id="resetButton" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px; border-color: #181818" type="button" class="btn btn-sm btn-light">Reset</button>
+                    <button id="familyButton" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px" type="button" class="btn btn-sm btn-primary">Filter</button>
+                </div>
+
+                <!--Person Selection Section-->
+                <div id="person-selection-container">
+                    <label class="label-header larger-header" style="margin-top: 10px">Select Enslaved Person</label>
+
+                    <!--Enslaved Person-->
+                    <label class="label-header">Person:</label>
+                    <div class="filter-input-container">
+                        <input id="selectPerson" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">
+                        <button id="selectButton" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px" type="button" class="btn btn-sm btn-primary">Select</button>
+                    </div>
+                    <!--Checkbox-->
+                    <div class="form-check" style="margin-bottom: 5px">
+                        <input type="checkbox" class="form-check-input" id="searchWithinFilterConditionsCheck">
+                        <label class="form-check-label" id="checkbox2">Search for enslaved persons within filter conditions</label>
+                    </div>
+                </div>
+
+                <!--Roots Wheel Controls-->
+                <div id="chordControlsContainer">
+                    <label class="label-header larger-header" style="margin-top: 10px">Roots Wheel Controls</label>
+                    <!--Chord Controls-->
+                    <label class="label-header">Size:</label>
+                    <input id="multiplierRange" style="position:relative;top:3px; margin-bottom: 15px; width: 100%" type="range" min="60" max="100" value="85">
+
+                    <!--Checkbox-->
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="otherCheckbox">
+                        <label class="form-check-label" id="checkbox">Show enslaved people without buyer data</label>
+                    </div>
+                    <!--Checkbox-->
+                    <div id="magnifyNamesCheckBoxContainer" class="form-check" style="margin-bottom: 5px; margin-top: 10px">
+                        <input type="checkbox" class="form-check-input" id="magnifyNamesConditionBox">
+                        <label class="form-check-label" id="checkbox4">Magnify names when hovering over them (turn off to improve performance)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="demographicsPage" class="section">
+        <!--<script src="//rawgit.com/FabricioRHS/skd3/master/build/sk.d3.min.js"></script>-->
+        <!--<link  href="//rawgit.com/FabricioRHS/skd3/master/build/sk.d3.min.css" rel="stylesheet" type="text/css" />-->
+        <!--<style>-->
+            <!--#sankeyChart {-->
+                <!--height: 500px;-->
+                <!--width: 960px;-->
+            <!--}-->
+        <!--</style>-->
+
+        <!--<div id="sankeyChart"/></div>-->
+        <!--<script src="js/sankey.js"></script>-->
+        <div style="width: 100%; height: 54px;">
+        </div>
+        <div class="container mx-2 my-5">
+            <button type="button" class="btn btn-light button">
+                <img src="images/clicker.svg" style="height: 1.2em; width: 1.2em"></img>
+                Hover/click graphs for more information
+            </button>
+        </div>
+        <div class="container h-300">
+            <div class="row">
+                <div class="col-lg-4 col-sm-12">
+                    <div id="pie" class="graphContainer fixed">
+                        <div class="small-space"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="big-space"></div>
+                    <div id="bar" class="graphContainer fixed">
+                        <div class="small-space"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="big-space"></div>
+                    <div class="big-space"></div>
+                    <div id="scatter" class="graphContainer fixed">
+                        <div class="small-space"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="height: 30vh"></div>
+    </div>
+    <div id="gu272familyTreesPage" class="section">
+        <div style="width: 100%; height: 54px; background: white;">
+        </div>
+        <div style="background: #f4f5f8; width: 100%; height: calc(100VH - 54px); position: relative">
+            <div id="left-containerTree" class="stage-shrink" style="float: left; width: 60%; height: 100%; border-top: 1px #eceef1 solid; overflow: scroll;">
+                <div id="familyTreeContainerTree" style="width: 100%; height: 100%; text-align: center; position:relative; overflow: hidden">
+                    <div id="noTreeDataTree" class="no-map-data-container">
+                        <label class="no-map-data-label">Choose an enslaved person to view the family tree for the person.</label>
+                    </div>
+                    <div class="family-tree" id="graphMapWhatTree"></div>
+                </div>
+            </div>
+            <div id="right-positioning-containerTree" class="arrow-positioning-container stage-open">
+                <!--Button to move panel-->
+                <!--<div id="move-buttonTree" class="arrow-container">-->
+                    <!--<i id="rightButtonTree" class="fas fa-angle-right right-button"></i>-->
+                    <!--<i id="leftButtonTree" style="display: none" class="fas fa-angle-left right-button"></i>-->
+                <!--</div>-->
+            </div>
+            <div id="right-containerTree" class="right-container stage-open">
+                <label class="label-header larger-header">Filter Enslaved Persons</label>
+                <!-- SM: Added form row and column class to condense control grid -->
+                <div class="form-row">
+                    <div class="col">
+                        <!--Family-->
+                        <label class="label-header">Family:</label>
+                        <div class="filter-input-container">
+                            <input id="inputFamilyTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">
+
+                            <!--<input id="inputFamilyTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+                            <!--<input id="inputFamilyTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+
+                            <!--<input id="inputFamilyTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+                        </div>
+                        <!--<input id="inputFamilyTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+
+                        <div class="sub-label" style="margin-top: -5px; display: block; margin-bottom: 5px">(Search for enslaved person and will filter to show people in that slave's family)</div>
+                    </div>
+                </div>
+
+                <!--Filter and Select Buttons-->
+                <div class="filter-input-container">
+                    <div style="flex-grow: 1"></div>
+                    <!--<input id="inputFamily" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+                    <button id="resetButtonTree" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px; border-color: #181818" type="button" class="btn btn-sm btn-light">Reset</button>
+                    <button id="familyButtonTree" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px" type="button" class="btn btn-sm btn-primary">Filter</button>
+                </div>
+
+                <!--Person Selection Section-->
+                <div id="person-selection-containerTree">
+                    <label class="label-header larger-header" style="margin-top: 10px">Select Enslaved Person</label>
+
+                    <!--Enslaved Person-->
+                    <label class="label-header">Person:</label>
+                    <div class="filter-input-container">
+                        <input id="selectPersonTree" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">
+                        <button id="selectButtonTree" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px" type="button" class="btn btn-sm btn-primary">Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="newVizPage" class="section">
+        <script src="./dependencies/sk.d3.js"></script>
+        <link  href="//rawgit.com/FabricioRHS/skd3/master/build/sk.d3.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #sankeyChart {
+                height: 80VH;
+                width: 100VW;
+            }
+            /*#sankeyChart {*/
+                /*height: 500px;*/
+                /*width: 100VW;*/
+            /*}*/
+            .sk-svg {
+                display: block;
+                margin: auto;
+            }
+        </style>
+
+        <div id="sankeyChart"/></div>
+    <script src="js/sankey.js"></script>
+    </div>
+    <!--<div id="familyTreePage" class="section">-->
+        <!--<div style="width: 100%; height: 54px;">-->
+        <!--</div>-->
+        <!--<div class="familyTreePageContainer">-->
+            <!--<div class="row px-3 py-4">-->
+                <!--<div class="col">-->
+                    <!--<button type="button" class="btn btn-light button">-->
+                        <!--<img src="images/clicker.svg" style="height: 1.2em; width: 1.2em"></img>-->
+                            <!--Hover/click trees for more information-->
+                    <!--</button>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+                <!--<div class="col-lg-4 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-2 col-sm-6" style="padding-left:0px; padding-right:0px">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+                <!--<div class="col-lg-3 col-sm-6">-->
+                    <!--<div class="treeContainer"></div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <div id="aboutPage" class="section">
+        <div style="background: #f4f5f8; width: 100%; height: calc(100VH - 54px); margin-top:54px; position: relative">
+            <div class="container d-flex h-100">
+                <div class="row justify-content-center align-self-center">
+                    <div class="col-lg-6 col-xs-12 px-5 py-5">
+                        <h3>Designed + Built By</h3>
+                        <hr>
+                        <h4>Jonathan Gibson</h4>
+                        <p class="about-text">
+                            Georgetown Slavery Archive Digital Fellow 2019
+                            <br>
+                            American Studies and Computer Science (COL '19)
+                            <br>
+                            <a id="jon-email" href="mailto:jeg263@georgetown.edu">Email</a> |
+                            <a id="jon-github" href="https://github.com/jeg263">Github</a>
+                        </p>
+                        </br><br>
+                        <h4>Sabrina Ma</h4>
+                        <p class="about-text">
+                            Georgetown Slavery Archive Digital Fellow 2018
+                            <br>
+                            Computer Science and Business Administration (COL '18)
+                            <br>
+                            <a id="sab-email" href="mailto:slm243@georgetown.edu">Email</a> |
+                            <a id="sab-github" href="https://github.com/sabrinamamamia">Github</a> |
+                            <a id="sab-linkedin" href="https://www.linkedin.com/in/sabrinalma">LinkedIn</a>
+                        </p>
+                        <br>
+                        <small>Special thanks to <a href="https://gufaculty360.georgetown.edu/s/faculty-profile?netid=ar44">Professor Adam Rothman</a> for the guidance and <a href="http://digitalhumanities.msu.edu/people/sharon-leon/">Professor Sharon Leon</a> for the initial data collection!</small>
+                    </div>
+                    <div class="col-lg-6 col-xs-12 px-5 py-5">
+                        <h3>Learn More</h3>
+                        <hr>
+                        <ul class="about-text">
+                            <li><a id="descendants-website"href="https://www.gu272.net/members/gu272/">GU272 Descendants Association</a></li>
+                            <li><a id="gsa-website" href="https://slaveryarchive.georgetown.edu/">Georgetown Slavery Archive</a></li>
+                            <li><a id="slavery-website" href="http://slavery.georgetown.edu/">Slavery, Memory, and Reconciliation</a></li>
+                            <li><a id="memory-project" href="http://www.georgetownmemoryproject.org/">Georgetown Memory Project</a></li>
+                        </ul>
+                        <br><br>
+                        <h3>Source Code + Data</h3>
+                        <hr>
+                        <ul class="about-text">
+                            <li><a id="sourcecode" href="https://github.com/jeg263/GU272DigitalExploration">Source Code</a></li>
+                            <li><a id="data" href="https://docs.google.com/spreadsheets/d/17mOxb63iAyfnC6cWxec_oU8zH3IDigRjRySXnOB17e0/edit?usp=sharing">Data</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Analytics script -->
+<script type="text/javascript" src="./js/eventTracker.js"></script>
+<!-- <script type="text/javascript" src="./js/timelineControls.js"></script> -->
+<script type="text/javascript" src="./js/routeMap.js"></script>
+<script type="text/javascript" src="./js/pathwaysMap.js"></script>
+<script type="text/javascript" src="./js/demographics.js"></script>
+<!--<script type="text/javascript" src="./js/familyTree.js"></script>-->
+</body>
+</html>
+
+<!--<div class="top-bar">-->
+<!--<label>GU272 Visualization</label>-->
+<!--<button id="resetButton" style="margin-top: 5px; float: right; margin-right: 20px" type="button" class="btn btn-sm btn-light">Reset Visualization</button>-->
+<!--</div>-->
+<!--<div class="main-view">-->
+<!--<div class="diagram-container">-->
+<!--<div id="bundle"></div>-->
+<!--</div>-->
+<!--<div class="diagram-container-right">-->
+
+<!--<div class="btn-group btn-group-toggle" data-toggle="buttons">-->
+<!--<label class="btn btn-sm btn-secondary active">-->
+<!--<input type="radio" name="options" id="option1" autocomplete="off" checked> Active-->
+<!--</label>-->
+<!--<label class="btn btn-sm btn-secondary">-->
+<!--<input type="radio" name="options" id="option2" autocomplete="off"> Radio-->
+<!--</label>-->
+<!--<label class="btn btn-sm btn-secondary">-->
+<!--<input type="radio" name="options" id="option3" autocomplete="off"> Radio-->
+<!--</label>-->
+<!--</div>-->
+
+<!--<label class="label-header">Size:</label>-->
+<!--<input style="position:relative;top:3px; margin-bottom: 15px; width: 100%" type="range" min="65" max="100" value="85">-->
+<!--<label class="label-header">Filter by family:</label>-->
+<!--<div style="display: flex; width: 100%; flex-direction: row">-->
+<!--<input id="inputFamily" style="flex-grow: 1" type="text" class="form-control form-control-sm typeahead" data-provide="typeahead">-->
+<!--<button id="familyButton" style="flex-shrink: 1; flex-basis: 100px; margin-left: 10px" type="button" class="btn btn-sm btn-primary">Filter</button>-->
+<!--</div>-->
+<!--<div class="form-check">-->
+<!--<input type="checkbox" class="form-check-input" id="exampleCheck1">-->
+<!--<label class="form-check-label" id="checkbox">Show enslaved people without buyer data</label>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->

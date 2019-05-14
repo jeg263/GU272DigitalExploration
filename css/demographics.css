@@ -1,0 +1,23 @@
+.graphContainer {
+  width: 100%;
+}
+
+.chart-title {
+  font-weight: bold;
+  font-size: calc(15px + 1vh);
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .fixed {
+    position: sticky;
+    top: 30vh;
+  }
+  .big-space {
+    height: 100vh;
+    width: 100%;
+  }
+  .small-space {
+    height: 30vh;
+  }
+}
